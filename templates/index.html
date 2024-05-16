@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symptom Checker</title>
+    <style>
+        /* Add your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 70px; /* Added margin-bottom to prevent overlap with footer */
+        }
+        header, footer {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+            border-radius: 8px;
+        }
+        footer {
+            background-color: #333;
+            color: #fff;
+            padding: 5px 0;
+            text-align: center;
+            border-radius: 8px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin-top: 20px;
+        }
+        form {
+            margin-top: 20px;
+        }
+        .input-container {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: calc(100% - 18px);
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type="submit"],
+        button[type="button"] {
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+        }
+        input[type="submit"]:hover,
+        button[type="button"]:hover {
+            background-color: #45a049;
+        }
+        .checkbox-container {
+            margin-bottom: 10px;
+        }
+        @media screen and (max-width: 600px) {
+            .container {
+                max-width: 90%;
+                margin: 20px auto;
+                padding: 10px;
+            }
+            footer {
+                padding: 3px 0;
+            }
+            header, footer {
+                border-radius: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Symptom Checker</h1>
+</header>
+
+<div class="container">
+    <div class="input-container">
+        <label for="patient_name">Patient Name:</label>
+        <input type="text" name="patient_name" id="patient_name" required><br>
+        <label for="ambulance_number">Ambulance Number:</label>
+        <input type="text" name="ambulance_number" id="ambulance_number" required><br>
+    </div>
+    <h2>Symptoms</h2>
+    <input type="text" id="symptomSearch" onkeyup="filterSymptoms()" placeholder="Search symptoms...">
+    <form action="/predict" method="post" id="symptomForm">
+        {% for symptom in symptoms %}
+        <div class="checkbox-container" id="{{ symptom }}Container" style="display: none;">
+            <input type="checkbox" name="symptoms[]" value="{{ symptom }}" class="symptomCheckbox" id="{{ symptom }}Checkbox">
+            <label for="{{ symptom }}Checkbox">{{ symptom|replace("_", " ")|title }}</label>
+        </div>
+        <input type="hidden" name="{{ symptom }}" value="0">
+        {% endfor %}
+
+        <input type="submit" value="Predict">
+        <button type="button" onclick="sendSymptoms()">Send Symptoms</button>
+    </form>
+</div>
+
+<footer>
+    <p>&copy; 2024 Symptom Checker. All rights reserved.</p>
+</footer>
+
+<script>
+    function filterSymptoms() {
+        const searchInput = document.getElementById('symptomSearch').value.toLowerCase();
+        const symptoms = document.querySelectorAll('.checkbox-container');
+
+        symptoms.forEach(symptom => {
+            const label = symptom.querySelector('label').textContent.toLowerCase();
+            if (label.includes(searchInput)) {
+                symptom.style.display = 'block';
+            } else {
+                symptom.style.display = 'none';
+            }
+        });
+    }
+
+    function sendSymptoms() {
+        const checkboxes = document.querySelectorAll('.symptomCheckbox:checked');
+        const patientName = document.getElementById('patient_name').value;
+        const ambulanceNumber = document.getElementById('ambulance_number').value;
+        const symptoms = Array.from(checkboxes).map(checkbox => checkbox.value);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/send-symptoms", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(JSON.stringify({symptoms, patientName, ambulanceNumber}));
+    }
+</script>
+
+</body>
+</html>
