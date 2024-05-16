@@ -33,7 +33,7 @@ mqtt_client.on_message = on_message
 mqtt_client.subscribe(MQTT_TOPIC)
 
 # Load the dataset to get symptom fields
-data = pd.read_csv("training.csv")
+data = pd.read_csv("Training.csv")
 symptoms = data.columns[:-1]
 
 
